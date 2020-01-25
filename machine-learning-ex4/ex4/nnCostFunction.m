@@ -62,16 +62,16 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
-X  = [ones(m,1) X];
+X  = [ones(m,1) X];		% 5000x401
 A1 = X;
-Z2 = X*Theta1';
+Z2 = X*Theta1';			% 5000x401 * 401x25 = 5000x25
 A2 = sigmoid(Z2);
-A2 = [ones(m,1), A2];
-Z3 = A2*Theta2';
+A2 = [ones(m,1), A2];		% 5000x26
+Z3 = A2*Theta2';		% 5000x26 * 26x10 = 5000x10
 A3 = sigmoid(Z3);
 H  = A3;
 
-Y = zeros(m, num_labels);
+Y = zeros(m, num_labels);	% 5000x10
 for k = 1:num_labels
     Y(:,k) = Y(:,k) + (y==k);
 end
@@ -79,10 +79,23 @@ J = -(1/m) * sum(Y.*log(H) + (1-Y).*log(1-H), 'all');
 
 %  Regularization
 
-J = J + (lambda / (2*m)) * (sum(Theta1(:,2:end).^2, 'all') ... 
-    + sum(Theta2(:,2:end).^2, 'all'));
+J = J + (lambda / (2*m)) * (sum(Theta1(:, 2:end).^2, 'all') ... 
+    + sum(Theta2(:, 2:end).^2, 'all'));
 
-% -------------------------------------------------------------
+%  Gradient
+delta3 = H - Y;	    % 5000x10
+delta2 = (delta3 * Theta2) .* [ones(m, 1) sigmoidGradient(Z2)];  % 5000x26
+% no need to calculate delta1)
+
+DELTA1 = delta2(:, 2:end)' * A1;		% 25x5000 * 5000x401 =  25x401
+DELTA2 = delta3' * A2;			        % 10x5000 * 5000x26 = 10x26
+
+Theta1_grad = Theta1_grad + DELTA1 * (1/m);
+Theta2_grad = Theta2_grad + DELTA2 * (1/m);
+
+% Gradient Reglarization
+Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + (lambda/m) * Theta1(:, 2:end);
+Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + (lambda/m) * Theta2(:, 2:end);
 
 % =========================================================================
 
