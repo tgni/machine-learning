@@ -1,1 +1,1 @@
-# machine-learning for Ag's matlab solution
+# solution for Andrew Ng's maching learning course 
